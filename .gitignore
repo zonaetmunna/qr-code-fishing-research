@@ -1,0 +1,111 @@
+# =========================
+# Monorepo Root .gitignore
+# =========================
+
+# -------------------------
+# OS / IDE Files
+# -------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# Environment Variables
+# -------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# -------------------------
+# Python / Backend (FastAPI)
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing/Tools
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+
+# Databases
+*.sqlite3
+*.db
+backend/qr_phishing.db
+
+# -------------------------
+# Node.js / Frontend (Next.js)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# Next.js specific
+.next/
+out/
+build/
+.swc/
+
+# -------------------------
+# Machine Learning / Data
+# -------------------------
+# Ignore large model files
+*.h5
+*.keras
+*.hdf5
+*.pt
+*.pth
+*.ckpt
+*.pb
+*.onnx
+
+# Ignore datasets or image folders if you store them locally
+dataset/
+data/
+images/
+*.zip
+*.tar.gz
+*.csv
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
