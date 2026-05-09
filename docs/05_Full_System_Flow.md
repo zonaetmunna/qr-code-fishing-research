@@ -37,7 +37,7 @@ sequenceDiagram
 *   **Under the hood:** The frontend (React, Vue, or Vanilla JS) takes this image file and sends it via an HTTP `POST` request to the backend's `/api/v1/scan` endpoint. The image is sent as raw file bytes.
 
 ### 2. The Backend (Receiving the Image)
-*   **Action:** Your FastAPI backend receives the request in the `scan_qr` function (inside `backend/app/api/routers/scan.py`).
+*   **Action:** Your FastAPI backend receives the request in the `scan_qr` function (inside `qr-code-fishing-backend/app/api/routers/scan.py`).
 *   **Under the hood:** It first checks if the uploaded file is actually an image and ensures it isn't too large. If everything looks good, it reads the raw bytes of the image into memory.
 
 ### 3. Decoding the QR Code (Text Extraction)

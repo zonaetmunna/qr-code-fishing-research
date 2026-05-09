@@ -46,7 +46,7 @@ def load_model() -> None:
             logger.warning(
                 "No ML model found in %s. "
                 "ML classification will be skipped. "
-                "Please place your exported model.h5 in the backend/app/models/ml/ directory.",
+                "Please place your exported model.h5 in the qr-code-fishing-backend/app/models/ml/ directory.",
                 MODEL_DIR,
             )
         else:

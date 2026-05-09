@@ -1,6 +1,6 @@
 # Backend Implementation Details
 
-This document dives into the specific roles and implementations of the core backend files within the `backend/app/` directory.
+This document dives into the specific roles and implementations of the core backend files within the `qr-code-fishing-backend/app/` directory.
 
 ## Core API Routing
 

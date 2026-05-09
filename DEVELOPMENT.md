@@ -25,8 +25,8 @@ On Windows, the Python launcher is often `py -3` instead of `python`.
 
 | Location | Purpose |
 |----------|---------|
-| `backend/.env` | API + database URL (do **not** commit real secrets) |
-| `backend/.env.example` | Template — copy to `.env` and edit |
+| `qr-code-fishing-backend/.env` | API + database URL (do **not** commit real secrets) |
+| `qr-code-fishing-backend/.env.example` | Template — copy to `.env` and edit |
 | `qr-code-fishing-frontend/.env.local` | Optional; copy from `.env.example` |
 | `qr-code-fishing-frontend/.env.example` | `NEXT_PUBLIC_API_URL` for the browser |
 
@@ -60,9 +60,9 @@ Stop:
 docker compose down
 ```
 
-Default stack (see `docker-compose.yml`): Postgres on port **5432**, database name **`qr_phishing`**, user **`postgres`** / password **`postgres`** — override in `backend/.env` `DATABASE_URL` if you change credentials.
+Default stack (see `docker-compose.yml`): Postgres on port **5432**, database name **`qr_phishing`**, user **`postgres`** / password **`postgres`** — override in `qr-code-fishing-backend/.env` `DATABASE_URL` if you change credentials.
 
-**SQLite (no Postgres):** set in `backend/.env`:
+**SQLite (no Postgres):** set in `qr-code-fishing-backend/.env`:
 
 ```env
 DATABASE_URL=sqlite:///./qr_phishing.db
@@ -204,6 +204,6 @@ Or open the health URL in a browser.
 
 ## Security notes
 
-- Never commit `backend/.env` or real passwords.  
+- Never commit `qr-code-fishing-backend/.env` or real passwords.  
 - Use `.env.example` for placeholders only.  
 - Rotate credentials if they were ever committed or shared.

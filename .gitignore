@@ -68,7 +68,7 @@ coverage.xml
 # Databases
 *.sqlite3
 *.db
-backend/qr_phishing.db
+qr-code-fishing-backend/qr_phishing.db
 
 # -------------------------
 # Node.js / Frontend (Next.js)

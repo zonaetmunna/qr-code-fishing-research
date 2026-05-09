@@ -21,7 +21,7 @@ The frontend is built using **Next.js** (App Router paradigm) with React, styled
 *   **Display**: Parses the JSON response from the backend and visually displays the safety classification (`SAFE`, `RISKY`, or `DANGEROUS`) and the confidence indicators.
 
 ### 2. Backend (FastAPI - Python)
-**Location:** `/backend/`
+**Location:** `/qr-code-fishing-backend/`
 
 The backend serves as the orchestrator of the entire system, built on **FastAPI** for high concurrency and auto-generated OpenAPI documentation.
 *   **API Layer (`app/api/routers/scan.py`)**: Exposes the `/scan` and `/health` endpoints. Handles HTTP validation and exceptions.
@@ -29,7 +29,7 @@ The backend serves as the orchestrator of the entire system, built on **FastAPI*
 *   **Heuristic Engine (`app/services/phishing_analysis.py`)**: Runs rule-based checks on the extracted URL string (e.g., checking for raw IPs, unusual lengths, or weird ports).
 
 ### 3. Machine Learning (TensorFlow/Keras)
-**Location:** `/backend/app/models/ml/` and `/backend/app/services/ml_service.py`
+**Location:** `/qr-code-fishing-backend/app/models/ml/` and `/qr-code-fishing-backend/app/services/ml_service.py`
 
 This tier runs alongside the heuristic engine, analyzing visual artifacts rather than string patterns.
 *   **Implementation**: A custom Convolutional Neural Network (CNN) trained in Google Colab (`research/qr_code.ipynb`) and exported as an `.h5` file.
@@ -37,7 +37,7 @@ This tier runs alongside the heuristic engine, analyzing visual artifacts rather
 *   **Decision Fusion**: The backend evaluates the ML score. If the ML score is high (e.g., >80% confidence of maliciousness), it overrides the heuristic score.
 
 ### 4. Database (SQLite + SQLAlchemy)
-**Location:** `/backend/qr_phishing.db`
+**Location:** `/qr-code-fishing-backend/qr_phishing.db`
 
 *   **Role**: Stores historical scan records for analytics and auditing.
 *   **ORM**: Uses SQLAlchemy to manage database sessions and map Python objects to SQL tables (`app/repositories/scan_repository.py`).
