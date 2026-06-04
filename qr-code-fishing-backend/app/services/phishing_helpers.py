@@ -32,16 +32,23 @@ _SHORTENER_HOSTS = frozenset(
     }
 )
 _PATH_KEYWORDS = (
-    "login",
-    "signin",
-    "verify",
-    "account",
-    "update",
-    "secure",
-    "wallet",
-    "password",
     "confirm",
+    "password",
+    "secure",
+    "signin",
+    "update",
+    "verify",
+    "wallet",
 )
+
+def is_local_host(hostname: str) -> bool:
+    """Check if the hostname is a local or loopback address."""
+    if hostname in ("localhost", "127.0.0.1", "::1"):
+        return True
+    # Basic check for private IP ranges (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+    if re.match(r"^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)", hostname):
+        return True
+    return False
 
 
 def clip_indicators(items: list[str], limit: int = MAX_INDICATORS_DISPLAY) -> list[str]:
@@ -81,6 +88,8 @@ def score_scheme(scheme: str) -> tuple[int, list[str]]:
 
 
 def score_ip_host(hostname: str) -> tuple[int, list[str]]:
+    if is_local_host(hostname):
+        return 0, []
     if re.match(r"^\d{1,3}(\.\d{1,3}){3}$", hostname):
         return 25, ["Host is a raw IP address instead of a domain name."]
     return 0, []
@@ -126,6 +135,9 @@ def score_nonstandard_port(parsed: ParseResult) -> tuple[int, list[str]]:
     if port is None:
         return 0, []
     if port in (80, 443):
+        return 0, []
+    # Allow common development ports to avoid false positives during testing
+    if port in (3000, 5173, 8000, 8080):
         return 0, []
     return 8, [f"Non-standard port {port} — often used in imposter or test pages."]
 

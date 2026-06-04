@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.core.config import get_settings
 from app.repositories.scan_repository import create_scan
-from app.schemas.scan import HealthResponse, ReadinessResponse, ScanResponse, WifiPayloadInfo
+from app.schemas.scan import Classification, HealthResponse, ReadinessResponse, ScanResponse, WifiPayloadInfo
 from app.services.phishing_analysis import analyze_url
 from app.services.phishing_helpers import MAX_URL_CHARS
 from app.services.qr_decoder import QRDecodeError, decode_qr_from_bytes

@@ -22,4 +22,5 @@ pytest>=8.3.0
 qrcode[pil]>=7.4.2
 
 # Machine Learning
+tensorflow>=2.16.0
 Pillow>=10.2.0
