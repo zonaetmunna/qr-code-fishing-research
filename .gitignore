@@ -112,3 +112,15 @@ images/
 
 # Hugging Face Space deploy clone (separate git repo, not part of this repo)
 hf-space/
+
+# -------------------------
+# Mobile (Expo) app — re-include sources that the broad Python/ML ignores
+# above (`lib/`, `images/`) would otherwise swallow. These are real app
+# sources/assets and MUST be committed, or EAS Build fails in prebuild
+# ("cannot access ./assets/images/icon.png") and the JS bundle can't
+# resolve `@/lib/*`.
+# -------------------------
+!qr-code-fishing-mobile/assets/images/
+!qr-code-fishing-mobile/assets/images/**
+!qr-code-fishing-mobile/src/lib/
+!qr-code-fishing-mobile/src/lib/**
