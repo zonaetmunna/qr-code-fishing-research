@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { QrWebcamDialog } from "@/components/qr-webcam-dialog"
 import { PAGE_MAX_CLASS } from "@/lib/layout"
-import { getClassificationBadgeProps } from "@/lib/classification-styles"
+import { getClassificationBanner } from "@/lib/classification-styles"
 import {
   formatPayloadKind,
   formatScanError,
@@ -85,6 +85,13 @@ export default function Page() {
     }
   }, [urlInput])
 
+  const reset = useCallback(() => {
+    setResult(null)
+    setError(null)
+    setFileName(null)
+    setUrlInput("")
+  }, [])
+
   const openGallery = useCallback(() => {
     document.getElementById(galleryInputId)?.click()
   }, [galleryInputId])
@@ -133,9 +140,9 @@ export default function Page() {
     [onFile],
   )
 
-  const riskBadge =
+  const banner =
     result?.link_analysis_applied === true
-      ? getClassificationBadgeProps(result.classification)
+      ? getClassificationBanner(result.classification)
       : null
 
   return (
@@ -341,6 +348,20 @@ export default function Page() {
             </Alert>
           ) : null}
 
+          {loading && !result ? (
+            <Card size="sm">
+              <CardContent className="flex items-center gap-3 py-8">
+                <span
+                  className="border-muted-foreground/40 border-t-foreground size-5 animate-spin rounded-full border-2"
+                  aria-hidden
+                />
+                <span className="text-muted-foreground text-sm">
+                  Analyzing with the ML model…
+                </span>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {result ? (
             <section aria-labelledby="result-heading">
               <h2 id="result-heading" className="sr-only">
@@ -353,17 +374,60 @@ export default function Page() {
                     <Badge variant="outline">
                       {formatPayloadKind(result.payload_kind)}
                     </Badge>
-                    {riskBadge ? (
-                      <Badge variant={riskBadge.variant}>{riskBadge.label}</Badge>
-                    ) : null}
-                    <span className="text-muted-foreground ml-auto text-xs tabular-nums">
-                      {result.link_analysis_applied
-                        ? `${result.confidence.toFixed(1)}% confidence`
-                        : "Link scan: n/a"}
-                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto h-8"
+                      onClick={reset}
+                    >
+                      Scan another
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
+                  {/* Big verdict banner */}
+                  {banner ? (
+                    <div
+                      className={cn(
+                        "flex items-start gap-3 rounded-2xl border p-4",
+                        banner.container,
+                      )}
+                    >
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-current/15 text-lg font-bold">
+                        {banner.icon}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-base font-semibold leading-tight">
+                          {banner.label}
+                        </p>
+                        <p className="text-sm opacity-90">{banner.meaning}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-muted/40 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
+                      This QR isn’t a web link, so phishing scoring doesn’t apply.
+                    </div>
+                  )}
+
+                  {/* Confidence meter */}
+                  {banner ? (
+                    <div className="space-y-1.5">
+                      <div className="text-muted-foreground flex justify-between text-xs font-medium">
+                        <span>Model confidence</span>
+                        <span className="tabular-nums">
+                          {result.confidence.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+                        <div
+                          className={cn("h-full rounded-full", banner.bar)}
+                          style={{ width: `${Math.min(100, Math.max(0, result.confidence))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div>
                     <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                       Decoded payload

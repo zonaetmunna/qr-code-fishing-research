@@ -14,21 +14,49 @@ export function ScanResultCard({ result }: { result: ScanResult }) {
     ? getClassificationStyle(result.classification)
     : null;
 
+  const pct = Math.min(100, Math.max(0, result.confidence));
+
   return (
     <Card className="gap-0 p-0">
-      {/* Header: payload kind + risk tier + confidence */}
+      {/* Header: payload kind */}
       <View className="flex-row flex-wrap items-center gap-2 border-b border-zinc-200 p-5 dark:border-zinc-800">
         <Text variant="heading">Result</Text>
         <Badge label={formatPayloadKind(result.payload_kind)} />
-        {tier ? <Badge label={tier.label} className={tier.badge} textClassName={tier.bannerText} /> : null}
-        <Text variant="caption" className="ml-auto tabular-nums">
-          {result.link_analysis_applied
-            ? `${result.confidence.toFixed(1)}% link confidence`
-            : 'Link scan: n/a'}
-        </Text>
       </View>
 
       <CardContent className="p-5">
+        {/* Big verdict banner */}
+        {tier ? (
+          <View className={`flex-row items-center gap-3 rounded-2xl border p-4 ${tier.banner}`}>
+            <Text className={`text-2xl font-bold ${tier.bannerText}`}>{tier.icon}</Text>
+            <View className="flex-1">
+              <Text className={`text-base font-bold ${tier.bannerText}`}>{tier.label}</Text>
+              <Text className={`text-sm ${tier.bannerText}`}>{tier.meaning}</Text>
+            </View>
+          </View>
+        ) : (
+          <View className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+            <Text variant="muted">
+              This QR isn’t a web link, so phishing scoring doesn’t apply.
+            </Text>
+          </View>
+        )}
+
+        {/* Confidence meter */}
+        {tier ? (
+          <View className="gap-1.5">
+            <View className="flex-row justify-between">
+              <Text variant="caption">Model confidence</Text>
+              <Text variant="caption" className="tabular-nums">
+                {result.confidence.toFixed(0)}%
+              </Text>
+            </View>
+            <View className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+              <View className={`h-full rounded-full ${tier.bar}`} style={{ width: `${pct}%` }} />
+            </View>
+          </View>
+        ) : null}
+
         {/* Decoded payload */}
         <View className="gap-1">
           <Text variant="caption" className="uppercase tracking-wide">

@@ -119,8 +119,14 @@ export default function ScanScreen() {
                     disabled={loading}
                     onPress={() => setMethod(m.id)}
                     className={cn(
-                      'flex-1 items-center rounded-xl py-2.5',
-                      active ? 'bg-white shadow-sm dark:bg-zinc-950' : ''
+                      // NOTE: avoid NativeWind `shadow-*` here — toggling a
+                      // shadow class on an Expo Router screen crashes via
+                      // react-native-css-interop (nativewind#1557). A bordered
+                      // white pill reads as "selected" without the shadow path.
+                      'flex-1 items-center rounded-xl border py-2.5',
+                      active
+                        ? 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-950'
+                        : 'border-transparent'
                     )}
                   >
                     <Text

@@ -109,3 +109,6 @@ images/
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
+
+# Hugging Face Space deploy clone (separate git repo, not part of this repo)
+hf-space/

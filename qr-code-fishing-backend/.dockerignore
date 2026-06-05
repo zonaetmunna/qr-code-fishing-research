@@ -1,0 +1,16 @@
+# Keep the image small — but DO include app/models/ml/ (the trained model).
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+tests/
+.env
+.env.*
+*.db
+*.sqlite3
+.venv/
+venv/
+.git/
+.gitignore
