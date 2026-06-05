@@ -22,6 +22,12 @@ class PhishingAnalysisResult(BaseModel):
     indicators: list[str] = Field(default_factory=list)
 
 
+class ScanUrlRequest(BaseModel):
+    """Request body for analyzing a URL/text typed directly (no QR image)."""
+
+    url: str = Field(..., min_length=1, description="URL or text to analyze.")
+
+
 class WifiPayloadInfo(BaseModel):
     """Wi‑Fi QR metadata safe for clients (no password)."""
 

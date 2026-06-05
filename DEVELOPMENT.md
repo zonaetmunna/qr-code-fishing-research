@@ -151,6 +151,63 @@ npm run test
 
 ---
 
+## Mobile (Expo)
+
+Working directory: **`qr-code-fishing-mobile`**
+
+Native iOS/Android app (Expo SDK 56 + Expo Router + NativeWind). It uploads a QR
+photo to the same backend `POST /api/v1/scan` — no backend changes.
+
+> ⚠️ Uses native modules (camera, reanimated), so it runs in a **custom dev
+> client** via `expo run:*`, **not** Expo Go.
+
+### Install dependencies
+
+```powershell
+Set-Location "qr-code-fishing-mobile"
+npm install
+Copy-Item .env.example .env
+# Set EXPO_PUBLIC_API_URL so the device can reach the API (see below).
+```
+
+### Point the app at the backend
+
+On a phone, `localhost` is the phone itself. Set `EXPO_PUBLIC_API_URL` in
+`qr-code-fishing-mobile\.env`:
+
+| Target            | Value                              |
+|-------------------|------------------------------------|
+| Physical device   | `http://<dev-machine-LAN-IP>:8000` |
+| Android emulator  | `http://10.0.2.2:8000`             |
+| iOS simulator     | `http://localhost:8000`            |
+
+And run the backend bound to all interfaces so the device can reach it:
+
+```powershell
+Set-Location "qr-code-fishing-backend"
+py -3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### Run the app
+
+```powershell
+Set-Location "qr-code-fishing-mobile"
+npx expo run:android   # or: npx expo run:ios (macOS only)
+```
+
+After the first native build, `npm start` reloads JS over the dev client.
+
+### Quality checks
+
+```powershell
+Set-Location "qr-code-fishing-mobile"
+npx tsc --noEmit
+npx expo lint
+npx expo-doctor
+```
+
+---
+
 ## Typical full-stack dev session
 
 1. Start Postgres (Docker) **or** point `DATABASE_URL` to your Postgres / SQLite.  

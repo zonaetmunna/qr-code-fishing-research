@@ -16,10 +16,43 @@ _TRUSTED_HOST_SUFFIXES = (
     "google.com",
     "microsoft.com",
     "github.com",
+    "gitlab.com",
     "wikipedia.org",
     "apple.com",
     "mozilla.org",
+    "amazon.com",
+    "youtube.com",
+    "facebook.com",
+    "instagram.com",
+    "linkedin.com",
+    "twitter.com",
+    "x.com",
+    "netflix.com",
+    "reddit.com",
+    "stackoverflow.com",
+    "whatsapp.com",
+    "zoom.us",
+    "paypal.com",
+    "dropbox.com",
+    "adobe.com",
+    "yahoo.com",
+    "bing.com",
+    "office.com",
+    "live.com",
+    "cloudflare.com",
+    "wordpress.com",
+    "medium.com",
 )
+
+
+def is_trusted_host(hostname: str) -> bool:
+    """True when the host is (a subdomain of) a known well-known legitimate domain.
+
+    Matches the registered domain exactly, so lookalikes like ``google.com.evil.tk``
+    or ``evil-google.com`` are NOT treated as trusted.
+    """
+    host = (hostname or "").lower()
+    return any(host == s or host.endswith("." + s) for s in _TRUSTED_HOST_SUFFIXES)
 _SHORTENER_HOSTS = frozenset(
     {
         "bit.ly",

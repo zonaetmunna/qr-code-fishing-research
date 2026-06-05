@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { QrWebcamDialog } from "@/components/qr-webcam-dialog"
 import { PAGE_MAX_CLASS } from "@/lib/layout"
@@ -21,9 +22,18 @@ import {
   formatPayloadKind,
   formatScanError,
   scanQrImage,
+  scanUrl,
   type ScanResult,
 } from "@/lib/scan-api"
 import { cn } from "@/lib/utils"
+
+type Method = "upload" | "camera" | "url"
+
+const METHODS: { id: Method; label: string; icon: string }[] = [
+  { id: "upload", label: "Upload", icon: "📁" },
+  { id: "camera", label: "Camera", icon: "📷" },
+  { id: "url", label: "URL", icon: "🔗" },
+]
 
 function pickImageFile(list: FileList | null): File | undefined {
   if (!list?.length) return undefined
@@ -34,7 +44,9 @@ function pickImageFile(list: FileList | null): File | undefined {
 export default function Page() {
   const galleryInputId = useId()
   const cameraInputId = useId()
+  const [method, setMethod] = useState<Method>("upload")
   const [fileName, setFileName] = useState<string | null>(null)
+  const [urlInput, setUrlInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ScanResult | null>(null)
@@ -56,6 +68,22 @@ export default function Page() {
       setLoading(false)
     }
   }, [])
+
+  const onUrlSubmit = useCallback(async () => {
+    const value = urlInput.trim()
+    if (!value) return
+    setError(null)
+    setResult(null)
+    setLoading(true)
+    try {
+      const data = await scanUrl(value)
+      setResult(data)
+    } catch (err: unknown) {
+      setError(formatScanError(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [urlInput])
 
   const openGallery = useCallback(() => {
     document.getElementById(galleryInputId)?.click()
@@ -120,9 +148,9 @@ export default function Page() {
           Analyze a QR code safely
         </h1>
         <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed md:text-base">
-          Upload a photo or use your phone camera to capture the QR in the room. We
-          decode the payload, run lightweight phishing heuristics on web links, and show
-          plain-language reasons — we never open the link for you.
+          Upload an image, scan with your camera, or paste a link. Our ML model
+          checks the URL for phishing and shows plain-language reasons — we never open
+          the link for you.
         </p>
       </section>
 
@@ -130,87 +158,167 @@ export default function Page() {
         <div className="flex flex-col gap-6 lg:col-span-7">
           <section aria-labelledby="upload-heading">
             <h2 id="upload-heading" className="sr-only">
-              Upload QR image
+              Analyze a QR code
             </h2>
             <Card size="sm">
-                <CardHeader>
-                <CardTitle>Upload or scan</CardTitle>
+              <CardHeader>
+                <CardTitle>Choose how to scan</CardTitle>
                 <CardDescription>
-                  <strong>Use camera</strong> opens a live preview on PC (requires
-                  permission). On phones you can also use <strong>System camera</strong> for
-                  the built-in camera app. <strong>Gallery / file</strong> picks an existing
-                  image. Max 5&nbsp;MB.
+                  Three ways to check a QR code or link. Max 5&nbsp;MB for images.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <fieldset
-                  className={cn(
-                    "m-0 min-w-0 rounded-3xl border border-dashed border-border bg-muted/20 p-0 text-center transition-colors",
-                    "flex flex-col items-center justify-center px-6 py-10 md:py-12",
-                    isDragging && "border-primary bg-muted/40",
-                    loading && "pointer-events-none opacity-60",
-                  )}
-                  onDragEnter={onDragEnter}
-                  onDragLeave={onDragLeave}
-                  onDragOver={onDragOver}
-                  onDrop={onDrop}
+                {/* Segmented method switcher */}
+                <div
+                  role="tablist"
+                  aria-label="Scan method"
+                  className="bg-muted/40 grid grid-cols-3 gap-1 rounded-2xl p-1"
                 >
-                  <legend className="sr-only">
-                    Upload QR code image — drag and drop, camera, or gallery
-                  </legend>
-                  <div className="max-w-sm flex-col gap-1 text-center">
-                    <span className="text-foreground text-sm font-medium">
-                      Drop an image here, or use the buttons below
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      PC: live webcam in the browser. Phone: system camera app or gallery.
-                      HTTPS (or localhost) required for webcam.
-                    </span>
-                  </div>
-                  <Input
-                    id={galleryInputId}
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    disabled={loading}
-                    onChange={onInputChange}
-                    aria-label="Choose QR code image from gallery or files"
-                  />
-                  <Input
-                    id={cameraInputId}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="sr-only"
-                    disabled={loading}
-                    onChange={onInputChange}
-                    aria-label="Take a photo of the QR code with the camera"
-                  />
-                  <div className="mt-4 flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:justify-center">
-                    <Button
+                  {METHODS.map((m) => (
+                    <button
+                      key={m.id}
                       type="button"
-                      variant="default"
-                      size="default"
-                      className="min-h-11 w-full sm:w-auto"
+                      role="tab"
+                      aria-selected={method === m.id}
                       disabled={loading}
-                      onClick={() => setWebcamOpen(true)}
+                      onClick={() => setMethod(m.id)}
+                      className={cn(
+                        "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                        method === m.id
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
                     >
-                      {loading ? "Analyzing…" : "Use camera"}
-                    </Button>
+                      <span aria-hidden>{m.icon}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Panel: Upload (drag-drop + gallery) */}
+                {method === "upload" ? (
+                  <fieldset
+                    className={cn(
+                      "m-0 min-w-0 rounded-3xl border border-dashed border-border bg-muted/20 p-0 text-center transition-colors",
+                      "flex flex-col items-center justify-center px-6 py-10 md:py-12",
+                      isDragging && "border-primary bg-muted/40",
+                      loading && "pointer-events-none opacity-60",
+                    )}
+                    onDragEnter={onDragEnter}
+                    onDragLeave={onDragLeave}
+                    onDragOver={onDragOver}
+                    onDrop={onDrop}
+                  >
+                    <legend className="sr-only">
+                      Upload QR code image — drag and drop or pick a file
+                    </legend>
+                    <div className="max-w-sm flex-col gap-1 text-center">
+                      <span className="text-foreground block text-sm font-medium">
+                        Drag &amp; drop an image here
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        or pick one from your files — PNG, JPG, WebP
+                      </span>
+                    </div>
+                    <Input
+                      id={galleryInputId}
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={loading}
+                      onChange={onInputChange}
+                      aria-label="Choose QR code image from gallery or files"
+                    />
                     <Button
                       type="button"
                       variant="secondary"
-                      size="default"
-                      className="min-h-11 w-full sm:w-auto"
+                      className="mt-4 min-h-11 w-full max-w-xs"
                       disabled={loading}
                       onClick={openGallery}
                     >
-                      Gallery / file
+                      {loading ? "Analyzing…" : "Choose image"}
                     </Button>
-                  </div>
-                </fieldset>
+                  </fieldset>
+                ) : null}
 
-                {fileName ? (
+                {/* Panel: Camera */}
+                {method === "camera" ? (
+                  <div className="rounded-3xl border border-dashed border-border bg-muted/20 px-6 py-10 text-center md:py-12">
+                    <p className="text-foreground text-sm font-medium">
+                      Scan with your camera
+                    </p>
+                    <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
+                      Opens a live preview (needs camera permission; HTTPS or localhost).
+                      On phones you can also use the system camera app.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                      <Button
+                        type="button"
+                        className="min-h-11 sm:w-auto"
+                        disabled={loading}
+                        onClick={() => setWebcamOpen(true)}
+                      >
+                        {loading ? "Analyzing…" : "Open camera"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="min-h-11 sm:w-auto"
+                        disabled={loading}
+                        onClick={openNativeCameraPicker}
+                      >
+                        System camera
+                      </Button>
+                    </div>
+                    <Input
+                      id={cameraInputId}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="sr-only"
+                      disabled={loading}
+                      onChange={onInputChange}
+                      aria-label="Take a photo of the QR code with the camera"
+                    />
+                  </div>
+                ) : null}
+
+                {/* Panel: URL input */}
+                {method === "url" ? (
+                  <form
+                    className="space-y-3"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      void onUrlSubmit()
+                    }}
+                  >
+                    <div className="space-y-1.5">
+                      <Label htmlFor="url-input">Paste a link to check</Label>
+                      <Input
+                        id="url-input"
+                        type="text"
+                        inputMode="url"
+                        placeholder="https://example.com/login"
+                        value={urlInput}
+                        disabled={loading}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        autoComplete="off"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="min-h-11 w-full"
+                      disabled={loading || !urlInput.trim()}
+                    >
+                      {loading ? "Analyzing…" : "Check link"}
+                    </Button>
+                    <p className="text-muted-foreground text-xs">
+                      The link is analyzed by the ML model — it is never opened.
+                    </p>
+                  </form>
+                ) : null}
+
+                {fileName && method !== "url" ? (
                   <p className="text-muted-foreground font-mono text-xs">
                     Selected: {fileName}
                   </p>
@@ -250,7 +358,7 @@ export default function Page() {
                     ) : null}
                     <span className="text-muted-foreground ml-auto text-xs tabular-nums">
                       {result.link_analysis_applied
-                        ? `${result.confidence.toFixed(1)}% link confidence`
+                        ? `${result.confidence.toFixed(1)}% confidence`
                         : "Link scan: n/a"}
                     </span>
                   </div>
@@ -303,13 +411,13 @@ export default function Page() {
                 <ol className="text-muted-foreground list-inside list-decimal space-y-3 leading-relaxed">
                   <li>
                     <span className="text-foreground font-medium">Decode</span> — We read
-                    the QR payload from your file or camera photo (web links, Wi‑Fi, text,
-                    etc.); nothing is opened in a browser.
+                    the QR payload from your image, camera, or pasted link (web links,
+                    Wi‑Fi, text, etc.); nothing is opened in a browser.
                   </li>
                   <li>
                     <span className="text-foreground font-medium">Score</span> — For http(s)
-                    links only, heuristics check HTTPS, host shape, TLDs, and common phishing
-                    patterns.
+                    links, an ML model estimates the phishing risk and rules add extra
+                    warnings.
                   </li>
                   <li>
                     <span className="text-foreground font-medium">Explain</span> — You get
@@ -325,24 +433,24 @@ export default function Page() {
               <CardHeader>
                 <CardTitle id="signals-heading">What we look at</CardTitle>
                 <CardDescription>
-                  Examples of signals in the current phase-1 rules.
+                  Signals behind the verdict.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="text-muted-foreground space-y-2 text-sm leading-relaxed">
                   <li className="flex gap-2">
                     <span className="text-foreground shrink-0">·</span>
-                    <span>HTTP vs HTTPS and raw IP hosts</span>
+                    <span>ML phishing risk score on the decoded URL</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-foreground shrink-0">·</span>
-                    <span>Suspicious TLDs and deep subdomain chains</span>
+                    <span>HTTP vs HTTPS, raw IP hosts, suspicious TLDs</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-foreground shrink-0">·</span>
                     <span>
-                      Userinfo patterns (e.g. <code className="text-foreground font-mono text-xs">@</code>{" "}
-                      tricks) and trusted-brand relief heuristics
+                      Userinfo <code className="text-foreground font-mono text-xs">@</code>{" "}
+                      tricks and trusted-brand safety checks
                     </span>
                   </li>
                 </ul>
