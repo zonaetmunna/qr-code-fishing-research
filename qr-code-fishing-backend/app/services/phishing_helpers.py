@@ -23,6 +23,10 @@ _TRUSTED_HOST_SUFFIXES = (
     "amazon.com",
     "youtube.com",
     "facebook.com",
+    "meta.com",
+    "fb.com",
+    "messenger.com",
+    "threads.net",
     "instagram.com",
     "linkedin.com",
     "twitter.com",
@@ -53,6 +57,19 @@ def is_trusted_host(hostname: str) -> bool:
     """
     host = (hostname or "").lower()
     return any(host == s or host.endswith("." + s) for s in _TRUSTED_HOST_SUFFIXES)
+
+
+def is_trusted_tld(hostname: str) -> bool:
+    """True for restricted education / government TLDs that attackers cannot register.
+
+    Covers ``.edu``/``.gov``/``.mil`` and country forms like ``.edu.bd``, ``.ac.uk``,
+    ``.gov.uk``, ``.gob.mx``. The pattern is anchored to the END of the host, so a
+    lookalike subdomain such as ``evil.ac.attacker.tk`` is NOT trusted.
+    """
+    host = (hostname or "").lower().rstrip(".")
+    if host.endswith((".edu", ".gov", ".mil")):
+        return True
+    return re.search(r"\.(edu|ac|gov|gob|mil)\.[a-z]{2}$", host) is not None
 _SHORTENER_HOSTS = frozenset(
     {
         "bit.ly",

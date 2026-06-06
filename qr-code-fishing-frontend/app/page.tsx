@@ -41,6 +41,11 @@ function pickImageFile(list: FileList | null): File | undefined {
   return f.type.startsWith("image/") ? f : undefined
 }
 
+/** Ensure the decoded URL has a scheme before opening it. */
+function toHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
 export default function Page() {
   const galleryInputId = useId()
   const cameraInputId = useId()
@@ -436,6 +441,35 @@ export default function Page() {
                       {result.extracted_url}
                     </p>
                   </div>
+
+                  {/* Open the destination (the user decides) */}
+                  {result.payload_kind === "url" ? (
+                    <div className="space-y-1.5">
+                      <Button
+                        type="button"
+                        variant={
+                          result.classification === "safe" ? "default" : "destructive"
+                        }
+                        className="w-full"
+                        onClick={() =>
+                          window.open(
+                            toHref(result.extracted_url),
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                        }
+                      >
+                        {result.classification === "safe"
+                          ? "Open link ↗"
+                          : "Open anyway ↗"}
+                      </Button>
+                      {result.classification !== "safe" ? (
+                        <p className="text-muted-foreground text-xs">
+                          We flagged this link — only open it if you are sure it’s genuine.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {result.wifi ? (
                     <div className="bg-muted/40 rounded-2xl border px-3 py-3 text-sm">
                       <p className="text-foreground font-medium">Wi‑Fi details</p>

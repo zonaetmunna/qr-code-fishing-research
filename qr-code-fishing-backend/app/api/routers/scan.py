@@ -19,7 +19,12 @@ from app.schemas.scan import (
     WifiPayloadInfo,
 )
 from app.services.phishing_analysis import analyze_url
-from app.services.phishing_helpers import MAX_URL_CHARS, is_trusted_host, parse_url_loose
+from app.services.phishing_helpers import (
+    MAX_URL_CHARS,
+    is_trusted_host,
+    is_trusted_tld,
+    parse_url_loose,
+)
 from app.services.qr_decoder import QRDecodeError, decode_qr_from_bytes
 from app.services.qr_payload import build_scan_payload, detect_payload_kind
 from app.services.ml_service import predict_url
@@ -123,14 +128,15 @@ def _analyze_and_store(db: Session, raw_payload: str) -> ScanResponse:
             parsed = parse_url_loose(raw_payload)
             host = (parsed.hostname or "").lower() if parsed else ""
 
-            if is_trusted_host(host):
-                # Safety net: an attacker cannot serve a real well-known domain.
+            if is_trusted_host(host) or is_trusted_tld(host):
+                # Safety net: well-known brands and restricted edu/gov TLDs (which an
+                # attacker cannot register) are treated as safe regardless of the ML score.
                 analysis.classification = Classification.SAFE
                 analysis.confidence = 95.0
                 analysis.indicators.insert(
                     0,
                     f"ML URL risk score: {ml_prob*100:.1f}% "
-                    "(well-known trusted domain — treated as safe).",
+                    "(trusted domain / restricted TLD — treated as safe).",
                 )
             else:
                 # The ML score is the primary verdict.

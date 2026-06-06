@@ -1,11 +1,17 @@
 import * as React from 'react';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { getClassificationStyle } from '@/lib/classification-styles';
 import { formatPayloadKind, type ScanResult } from '@/lib/scan-api';
+
+/** Ensure the decoded URL has a scheme before opening it. */
+function toHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
 
 /** Renders a scan result — mirrors the web result card in app/page.tsx. */
 export function ScanResultCard({ result }: { result: ScanResult }) {
@@ -66,6 +72,25 @@ export function ScanResultCard({ result }: { result: ScanResult }) {
             {result.extracted_url}
           </Text>
         </View>
+
+        {/* Open the destination (the user decides) */}
+        {result.payload_kind === 'url' ? (
+          <View className="gap-1.5">
+            <Button
+              variant={result.classification === 'safe' ? 'primary' : 'destructive'}
+              onPress={() => {
+                void Linking.openURL(toHref(result.extracted_url)).catch(() => {});
+              }}
+            >
+              <Text>{result.classification === 'safe' ? 'Open link' : 'Open anyway'}</Text>
+            </Button>
+            {result.classification !== 'safe' ? (
+              <Text variant="footnote" className="text-zinc-500 dark:text-zinc-400">
+                We flagged this link — open only if you are sure it’s genuine.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         {/* Wi‑Fi details */}
         {result.wifi ? (
