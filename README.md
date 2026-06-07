@@ -18,7 +18,7 @@ by URL heuristics and a trusted-domain safety net.
 | `qr-code-fishing-frontend/` | Web app | Next.js, React, Tailwind |
 | `qr-code-fishing-mobile/` | Mobile app | Expo / React Native |
 | `research/` | ML training notebooks (Google Colab) | TensorFlow / Keras |
-| `docs/` | Architecture & research write-ups | — |
+| `docs/` | [HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) — full step-by-step explanation of the ML + backend | — |
 | `deploy-backend.ps1` | One-command backend re-deploy script | PowerShell |
 | `hf-space/` | Local clone of the Hugging Face Space (deploy target; not committed to this repo) | — |
 
