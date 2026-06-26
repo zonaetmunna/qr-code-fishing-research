@@ -1,5 +1,7 @@
 # How It Works — Complete Step‑by‑Step Flow
 
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
+
 > Up‑to‑date explanation of the **current** system: a **4‑class deep‑learning** model
 > (benign / phishing / malware / defacement) served by a FastAPI backend, with web + mobile
 > apps. Supersedes the older `docs/01`–`docs/06` (an earlier image‑CNN / binary prototype).

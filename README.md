@@ -1,5 +1,7 @@
 # QR Code Phishing Detection ("Quishing" Detector)
 
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
+
 A research/thesis project that detects phishing in QR codes. A QR code is a
 loss-less encoding of its URL, so the system **decodes the QR to its URL** and a
 **machine-learning model classifies the URL** as safe / risky / dangerous, backed

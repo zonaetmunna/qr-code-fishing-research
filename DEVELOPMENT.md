@@ -1,5 +1,7 @@
 # Development & maintenance commands
 
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
+
 Reference for **QR Code Phishing Detection**: backend (FastAPI), frontend (Next.js), and database (PostgreSQL or SQLite).
 
 Paths below assume the repo root:

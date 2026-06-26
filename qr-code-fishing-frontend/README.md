@@ -1,4 +1,6 @@
-# Next.js template
+# QR Code Phishing Detection — Web (Next.js)
+
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
 
 This is a Next.js template with shadcn/ui.
 

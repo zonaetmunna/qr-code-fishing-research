@@ -10,6 +10,8 @@ pinned: false
 
 # QR Phishing Detection API
 
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
+
 FastAPI backend that decodes QR codes and detects phishing URLs with a
 character-level ML model (TensorFlow), plus URL heuristics and a trusted-domain
 safety net.

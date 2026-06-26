@@ -1,5 +1,7 @@
 # QR Code Phishing Detection — Mobile (Expo)
 
+> **Research project:** _An Explainable QR Code Analysis for Detecting Phishing and Malicious URLs Using Machine Learning_
+
 Native iOS/Android app for the QR Code Phishing Detection project. Capture a QR
 code with the camera (or pick a photo), upload it to the FastAPI backend, and
 see a plain-language **safe / risky / dangerous** verdict — the same analysis
