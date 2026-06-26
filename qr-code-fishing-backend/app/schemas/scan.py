@@ -61,6 +61,11 @@ class ScanResponse(BaseModel):
         default=True,
         description="True only when the payload was treated as a web URL for phishing heuristics.",
     )
+    threat_type: str | None = Field(
+        default=None,
+        description="Specific threat class from the ML model when not safe: "
+        "phishing, malware, or defacement. None for safe/non-link payloads.",
+    )
 
     model_config = {"from_attributes": True}
 

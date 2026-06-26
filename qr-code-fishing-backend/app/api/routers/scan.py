@@ -27,7 +27,7 @@ from app.services.phishing_helpers import (
 )
 from app.services.qr_decoder import QRDecodeError, decode_qr_from_bytes
 from app.services.qr_payload import build_scan_payload, detect_payload_kind
-from app.services.ml_service import predict_url
+from app.services.ml_service import is_known_brand, predict_url_full
 
 router = APIRouter(prefix="/api/v1", tags=["scan"])
 _settings = get_settings()
@@ -120,37 +120,49 @@ def _analyze_and_store(db: Session, raw_payload: str) -> ScanResponse:
         analysis = precomputed
         stored = safe_summary
 
-    # ML-PRIMARY decision for web links: the trained model sets the verdict.
-    # Heuristic findings remain as warnings; a trusted-domain safety net forces SAFE.
+    # ML-BASED decision for web links: the trained model alone sets the verdict.
+    # The static trusted-domain / restricted-TLD allowlist is an OPTIONAL false-positive
+    # guard (off by default — see Settings.use_reputation_safety_net); it never detects a
+    # threat, it can only mark a known-good site safe. Heuristics remain as explanations only.
+    threat_type: str | None = None
     if link_analysis_applied:
-        ml_prob = predict_url(raw_payload)
-        if ml_prob is not None:
+        ml = predict_url_full(raw_payload)
+        if ml is not None:
+            label, conf = ml          # argmax class + its probability (same as the notebook)
+            pct = round(conf * 100, 1)
             parsed = parse_url_loose(raw_payload)
             host = (parsed.hostname or "").lower() if parsed else ""
 
-            if is_trusted_host(host) or is_trusted_tld(host):
-                # Safety net: well-known brands and restricted edu/gov TLDs (which an
-                # attacker cannot register) are treated as safe regardless of the ML score.
+            safety_net = _settings.use_reputation_safety_net and (
+                is_trusted_host(host) or is_trusted_tld(host)
+            )
+            if safety_net:
+                # Optional reputation guard (disabled by default): force SAFE for known-good.
                 analysis.classification = Classification.SAFE
                 analysis.confidence = 95.0
                 analysis.indicators.insert(
-                    0,
-                    f"ML URL risk score: {ml_prob*100:.1f}% "
-                    "(trusted domain / restricted TLD — treated as safe).",
+                    0, f"ML class: {label} ({pct}%) — trusted domain / restricted TLD (safety net)."
                 )
-            else:
-                # The ML score is the primary verdict.
-                if ml_prob > 0.8:
-                    analysis.classification = Classification.DANGEROUS
-                elif ml_prob > 0.5:
-                    analysis.classification = Classification.RISKY
-                else:
-                    analysis.classification = Classification.SAFE
-                # Confidence = distance from the 0.5 boundary, scaled to 50–100%.
-                analysis.confidence = round(50.0 + abs(ml_prob - 0.5) * 100.0, 1)
+            elif is_known_brand(raw_payload):
+                # Verified exact brand / subdomain match (the model's own brand-similarity signal):
+                # the host literally IS a known brand domain, so it is legitimate by definition.
+                analysis.classification = Classification.SAFE
+                analysis.confidence = 99.0
                 analysis.indicators.insert(
-                    0, f"ML URL risk score: {ml_prob*100:.1f}% (primary verdict)."
+                    0, "Exact match to a known brand domain — verified legitimate (not a look-alike)."
                 )
+            elif label == "benign":
+                analysis.classification = Classification.SAFE
+                analysis.confidence = pct
+                analysis.indicators.insert(0, f"ML class: benign ({pct}%) — model verdict.")
+            else:
+                # A threat class won the argmax: report it and grade by its confidence.
+                analysis.classification = (
+                    Classification.DANGEROUS if conf > 0.8 else Classification.RISKY
+                )
+                analysis.confidence = pct
+                threat_type = label
+                analysis.indicators.insert(0, f"ML class: {label} ({pct}%) — model verdict.")
 
     wifi_info: WifiPayloadInfo | None = None
     if wifi_meta is not None:
@@ -193,4 +205,5 @@ def _analyze_and_store(db: Session, raw_payload: str) -> ScanResponse:
         created_at=record.created_at,
         wifi=wifi_info,
         link_analysis_applied=link_analysis_applied,
+        threat_type=threat_type,
     )

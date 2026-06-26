@@ -38,6 +38,11 @@ export function ScanResultCard({ result }: { result: ScanResult }) {
             <View className="flex-1">
               <Text className={`text-base font-bold ${tier.bannerText}`}>{tier.label}</Text>
               <Text className={`text-sm ${tier.bannerText}`}>{tier.meaning}</Text>
+              {result.threat_type ? (
+                <Text className={`mt-0.5 text-xs font-bold uppercase tracking-wide ${tier.bannerText}`}>
+                  Type: {result.threat_type}
+                </Text>
+              ) : null}
             </View>
           </View>
         ) : (

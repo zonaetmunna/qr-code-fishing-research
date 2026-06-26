@@ -33,6 +33,8 @@ export type ScanResult = {
   created_at: string;
   wifi: WifiPayloadInfo | null;
   link_analysis_applied: boolean;
+  /** Specific threat class when not safe: "phishing" | "malware" | "defacement" | null. */
+  threat_type: string | null;
 };
 
 // On a phone, `localhost` is the device itself — set EXPO_PUBLIC_API_URL to the

@@ -30,6 +30,14 @@ class Settings(BaseSettings):
         ge=1,
         description="Maximum uploaded image size in bytes",
     )
+    use_reputation_safety_net: bool = Field(
+        default=False,
+        description=(
+            "When True, a static trusted-domain / restricted-TLD allowlist can override the "
+            "ML verdict to SAFE (false-positive guard for deployment). Default False = the "
+            "ML model alone decides every verdict (ML-based detection)."
+        ),
+    )
 
     @field_validator("cors_origins", mode="before")
     @classmethod
